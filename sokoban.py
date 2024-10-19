@@ -5,6 +5,7 @@ class  SokobanPuzzle:
         self.walls= self.findwalls()
         self.boxes=self.findboxes()
         self.target = self.findtargets()
+       
 
     def findplayer(self):
         for i , row in enumerate (self.grid): 
@@ -36,6 +37,7 @@ class  SokobanPuzzle:
                 if (cell=='S'): 
                     targets.append((i,j))
         return targets
+    
     def goal(self):
         cmpt=0
         cmptB=0
@@ -95,6 +97,20 @@ class  SokobanPuzzle:
                         newGrid[newX+dx, newY+dy]='*'
                         successors.append((i, newGrid))
         return successors
+class Node :
+    def __init__(self, state, parent, action, g=0):
+        self.state = state
+        self.parent=parent 
+        self.action=action
+        if parent is None:
+            self.g = g
+        else:
+            self.g = parent.g + 1
+    def f ():
+        
+        
+
+        
 
 
 
