@@ -98,7 +98,7 @@ class  SokobanPuzzle:
                         successors.append((i, newGrid))
         return successors
 class Node :
-    def __init__(self, state, parent, action, g=0, h=0):
+    def __init__(self, state, parent, action, g=0):
         self.state = state
         self.parent=parent 
         self.action=action
@@ -106,8 +106,8 @@ class Node :
             self.g = g
         else:
             self.g = parent.g + 1
-        self.h=h
-        self.f=g+h
+        
+        
     def getPath (self): 
         path=[]
         current = self
