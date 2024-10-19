@@ -113,14 +113,14 @@ class Node :
         current = self
         while current is not None :
             path.append(current.state)
-            current==current 
+            current=current 
         return path
     def getSolution (self):
         actions=[]
         current = self
         while current is not None :
             actions.append(current.action)
-            current==current.parent
+            current=current.parent
         return actions 
     def setF(self, h):
         self.h = h
