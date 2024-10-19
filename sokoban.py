@@ -9,7 +9,7 @@ class  SokobanPuzzle:
     def findplayer(self):
         for i , row in enumerate (self.grid): 
             for j, cell in enumerate(row):
-                if (cell=='R'):
+                if (cell=='R' or cell=='.'):
                     return (i, j)
         return None
     
@@ -52,7 +52,59 @@ class  SokobanPuzzle:
         else : 
             return False
         
-    def
+    def successorFunction(self):
+        successors = [] 
+        x , y = self.find_player()
+
+        directions = {
+        'UP': (-1, 0),
+        'DOWN': (1, 0),
+        'LEFT': (0, -1),
+        'RIGHT': (0, 1)
+        }
+        for i, (dx,dy) in directions.items():
+            newX= x+dx
+            newY=y+dy 
+            if (0 <= newX < len(self.grid) and 0 <= newY< len(self.grid[0]) and self.grid[newX, newY]!='O' and self.grid[newX, newY]!='*'):
+                if (self.grid[newX, newY]=='S'):
+                    newGrid = [row[:] for row in self.grid]
+                    newGrid[x,y]=''
+                    newGrid[newX, newX]='.'
+                    successors.append((i, newGrid))
+
+                if (self.grid[newX, newY]==''):
+                    newGrid = [row[:] for row in self.grid]
+                    newGrid[x,y]=''
+                    newGrid[newX, newX]='R'
+                    successors.append((i, newGrid))
+
+                if(self.grid[newX, newY]=='B' ):
+                    if (0 <= newX+dx < len(self.grid) and 0 <= newY+dy< len(self.grid[0]) and self.grid[newX+dx, newY+dy]!='O' and self.grid[newX+dx, newY+dy]!='*'and self.grid[newX+dx, newY+dy]!='B'):
+                     
+                     if(self.grid[newX+dx, newY+dy]==''):
+                        newGrid = [row[:] for row in self.grid]
+                        newGrid[x,y]=''
+                        newGrid[newX, newX]='R'
+                        newGrid[newX+dx, newY+dy]='B'
+                        successors.append((i, newGrid))
+                    
+                     if(self.grid[newX+dx, newY+dy]=='S'):
+                        newGrid = [row[:] for row in self.grid]
+                        newGrid[x,y]=''
+                        newGrid[newX, newX]='R'
+                        newGrid[newX+dx, newY+dy]='*'
+                        successors.append((i, newGrid))
+        return successors
+
+
+
+
+
+
+            
+
+
+                                                                     
 
     
                 
