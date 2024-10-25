@@ -29,7 +29,15 @@ class  SokobanPuzzle:
                 if (cell=='B'):
                     boxes.append((i,j))
         return boxes
-    
+
+    def nbBoxes (self):
+        i=0
+        for i , row in enumerate(self.grid):
+            for j , cell in enumerate(row):
+                if (cell=='B' or cell=='*'):
+                    i+=1
+        return i 
+
     def findtargets (self): 
         targets =[]
         for i , row in enumerate(self.grid):
@@ -38,22 +46,18 @@ class  SokobanPuzzle:
                     targets.append((i,j))
         return targets
     
-    def goal(self):
-        cmpt=0
-        cmptB=0
+    def isGoal(self):
         for i , row in enumerate(self.grid):
             for j , cell in enumerate(row): 
                 if (cell=='*'):
                     cmpt+=1
-                else: 
-                    if(cell=='B'):
-                        cmptB+=1
-
-        if (cmpt==cmptB):
-            return True
-        else : 
-            return False
-        
+        for row in self.grid:
+            for cell in row:
+                if cell == 'B' and cmpt==0 :
+                    print("il n'existe pas de box dans votre grid ")
+                else : return False    
+        return True
+      
     def successorFunction(self):
         successors = [] 
         x , y = self.find_player()
@@ -98,7 +102,7 @@ class  SokobanPuzzle:
                         successors.append((i, newGrid))
         return successors
 class Node :
-    def __init__(self, state, parent, action, g=0):
+    def __init__(self, state, parent, action, g=0 , f , h):
         self.state = state
         self.parent=parent 
         self.action=action
@@ -106,6 +110,7 @@ class Node :
             self.g = g
         else:
             self.g = parent.g + 1
+        self.f= self.g + self.h
         
         
     def getPath (self): 
