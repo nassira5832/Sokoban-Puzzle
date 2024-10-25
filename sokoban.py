@@ -102,7 +102,7 @@ class  SokobanPuzzle:
                         successors.append((i, newGrid))
         return successors
 class Node :
-    def __init__(self, state, parent, action, f, h, g=0 ):
+    def __init__(self, state, parent, action, g=0 ):
         self.state = state
         self.parent=parent 
         self.action=action
@@ -110,6 +110,7 @@ class Node :
             self.g = g
         else:
             self.g = parent.g + 1
+        self.h=0
         self.f= self.g + self.h
         
     def getPath (self): 
@@ -135,6 +136,25 @@ def BFS(initial_state):
     visited = set()
     queue.enqueue(Node(initial_state, None, None))
     visited.add(initial_state)
-    
+    while not queue.is_empty():
+        current_node = queue.dequeue()
+        if current_node.state.isGoal():
+            return current_node.getSolution()  
+        for action, newGrid  in current_node.state.successorFunction():
+            if newGrid not in visited:
+                new_node = Node(newGrid, current_node, action)
+                queue.enqueue(new_node)
+                visited.add(newGrid)
+        return None
+
+
+
+
+
+        
+        
+        
+
+
 
 
