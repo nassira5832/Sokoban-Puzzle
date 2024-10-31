@@ -1,7 +1,5 @@
-from queue import Queue
 import math
-import time
-import copy 
+import time 
 class  SokobanPuzzle:
     def __init__(self, grid):
         self.grid=grid
@@ -96,7 +94,8 @@ class  SokobanPuzzle:
     def manhattan_distance(self, box, target):
         box_x, box_y = box
         target_x, target_y = target
-        return abs(box_x - target_x) + abs(box_y - target_y)
+        result=abs(box_x - target_x) + abs(box_y - target_y)
+        return result 
     
     def h1(self):
         somme=0
@@ -109,8 +108,10 @@ class  SokobanPuzzle:
         h1_value = self.h1()
         manhattan_sum = 0
         for box in self.boxes:
-                min_distance = min(self.manhattan_distance(box, target) for target in self.target)
-                manhattan_sum += min_distance
+            distances = [self.manhattan_distance(box, target) for target in self.target]
+            if distances:
+              min_distance = min(distances)
+              manhattan_sum += min_distance
 
         return 2 * h1_value + manhattan_sum 
     def distance_euclidienne(self, box , target): 
@@ -122,8 +123,10 @@ class  SokobanPuzzle:
         h=0
         max_distance = math.sqrt(len(self.grid) ** 2 + len(self.grid[0]) ** 2)
         for box in self.boxes:
-            min_dist = min( self.distance_euclidienne(box, target) * (1 + self.distance_euclidienne(box, target) / max_distance)for target in self.target)
-            h += min_dist
+            distences=[ self.distance_euclidienne(box, target) * (1 + self.distance_euclidienne(box, target) / max_distance)for target in self.target]
+            if distences:
+               min_dist = min(distences)
+               h += min_dist
         return h
     def __str__(self):
         return "\n".join("".join(row) for row in self.grid)
@@ -183,8 +186,6 @@ def BFS(initial_state):
     return []
 
 
-
-
 def AStar (initial_state):
     queue=[] 
     visited = []
@@ -214,16 +215,18 @@ def AStar2 (initial_state):
     visited = []
     initial_node=(Node(initial_state, None, None))
     initial_node.setF(0)
-    queue.append((initial_node.f, copy.deepcopy(initial_node)))
+    queue.append((initial_node.f, initial_node))
     visited.append(initial_state)
-    while  len(queue) > 0:
+    
+    while  len(queue)>0:
         current_node = queue.pop(0)[1]
         if current_node.state.isGoal():
             return current_node.getSolution()  
         if not current_node.state.isGoal(): 
              for action, newGrid  in current_node.state.successorFunction():
                  if newGrid not in visited:
-                    new_node = Node(newGrid, current_node, action)
+                    new_state=SokobanPuzzle(newGrid)
+                    new_node = Node(new_state, current_node, action)
                     h3 = new_node.state.h3()
                     new_node.setF(h3)
                     queue.append((new_node.f, new_node))
@@ -240,6 +243,7 @@ example = [
 ]
 def count_steps(result): 
     steps = 0
+    print(result)
     for i in result:  
         steps += 1 
     return steps
