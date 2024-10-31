@@ -1,5 +1,7 @@
-import math
 from queue import Queue
+import math
+import time
+import copy 
 class  SokobanPuzzle:
     def __init__(self, grid):
         self.grid=grid
@@ -15,7 +17,6 @@ class  SokobanPuzzle:
                 if (cell=='R' or cell=='.'):
                     return (i, j)
         return None
-    
     def findwalls(self):
         walls=[]
         for i , row in enumerate(self.grid):
@@ -23,7 +24,6 @@ class  SokobanPuzzle:
                 if (cell=='O'):
                     walls.append((i,j))
         return walls
-    
     def findboxes (self):
         boxes=[]
         for i , row in enumerate(self.grid):
@@ -31,8 +31,6 @@ class  SokobanPuzzle:
                 if (cell=='B'):
                     boxes.append((i,j))
         return boxes
- 
-
     def findtargets (self): 
         targets =[]
         for i , row in enumerate(self.grid):
@@ -40,10 +38,10 @@ class  SokobanPuzzle:
                 if (cell=='S'): 
                     targets.append((i,j))
         return targets
-    
     def isGoal(self):
-        for i , row in enumerate(self.grid):
-            for j , cell in enumerate(row): 
+        cmpt = 0 
+        for row in self.grid:
+            for cell in row: 
                 if (cell=='*'):
                     cmpt+=1
         for row in self.grid:
@@ -52,11 +50,10 @@ class  SokobanPuzzle:
                     print("il n'existe pas de box dans votre grid ")
                 else : return False    
         return True
-      
+    
     def successorFunction(self):
         successors = [] 
-        x , y = self.find_player()
-
+        x , y = self.findplayer()
         directions = {
         'UP': (-1, 0),
         'DOWN': (1, 0),
@@ -66,40 +63,41 @@ class  SokobanPuzzle:
         for i, (dx,dy) in directions.items():
             newX= x+dx
             newY=y+dy 
-            if (0 <= newX < len(self.grid) and 0 <= newY< len(self.grid[0]) and self.grid[newX, newY]!='O' and self.grid[newX, newY]!='*'):
-                if (self.grid[newX, newY]=='S'):
+            if (0 <= newX < len(self.grid) and 0 <= newY< len(self.grid[0]) and self.grid[newX][newY]!='O' and self.grid[newX][newY]!='*'):
+                if (self.grid[newX][newY]=='S'):
                     newGrid = [row[:] for row in self.grid]
-                    newGrid[x,y]=''
-                    newGrid[newX, newX]='.'
+                    newGrid[x][y]=''
+                    newGrid[newX][newY]='.'
                     successors.append((i, newGrid))
 
-                if (self.grid[newX, newY]==''):
+                if (self.grid[newX][newY]==' '):
                     newGrid = [row[:] for row in self.grid]
-                    newGrid[x,y]=''
-                    newGrid[newX, newX]='R'
+                    newGrid[x][y]=''
+                    newGrid[newX][newY]='R'
                     successors.append((i, newGrid))
 
-                if(self.grid[newX, newY]=='B' ):
-                    if (0 <= newX+dx < len(self.grid) and 0 <= newY+dy< len(self.grid[0]) and self.grid[newX+dx, newY+dy]!='O' and self.grid[newX+dx, newY+dy]!='*'and self.grid[newX+dx, newY+dy]!='B'):
+                if(self.grid[newX][newY]=='B' ):
+                    if (0 <= newX+dx < len(self.grid) and 0 <= newY+dy< len(self.grid[0]) and self.grid[newX+dx][newY+dy]!='O' and self.grid[newX+dx][newY+dy]!='*'and self.grid[newX+dx][newY+dy]!='B'):
                      
-                     if(self.grid[newX+dx, newY+dy]==''):
+                     if(self.grid[newX+dx][newY+dy]==' '):
                         newGrid = [row[:] for row in self.grid]
-                        newGrid[x,y]=''
-                        newGrid[newX, newX]='R'
-                        newGrid[newX+dx, newY+dy]='B'
+                        newGrid[x][y]=' '
+                        newGrid[newX][newY]='R'
+                        newGrid[newX+dx][newY+dy]='B'
                         successors.append((i, newGrid))
-                    
-                     if(self.grid[newX+dx, newY+dy]=='S'):
+
+                     if(self.grid[newX+dx][newY+dy]=='S'):
                         newGrid = [row[:] for row in self.grid]
-                        newGrid[x,y]=''
-                        newGrid[newX, newX]='R'
-                        newGrid[newX+dx, newY+dy]='*'
+                        newGrid[x][y]=''
+                        newGrid[newX][newY]='R'
+                        newGrid[newX+dx][newY+dy]='*'
                         successors.append((i, newGrid))
         return successors
     def manhattan_distance(self, box, target):
         box_x, box_y = box
         target_x, target_y = target
         return abs(box_x - target_x) + abs(box_y - target_y)
+    
     def h1(self):
         somme=0
         for row in self.grid:
@@ -110,9 +108,8 @@ class  SokobanPuzzle:
     def h2(self):
         h1_value = self.h1()
         manhattan_sum = 0
-        for box in self.boxes():
-                min_distance = min(self.manhattan_distance(box, target) 
-                                               for target in self.get_targets())
+        for box in self.boxes:
+                min_distance = min(self.manhattan_distance(box, target) for target in self.target)
                 manhattan_sum += min_distance
 
         return 2 * h1_value + manhattan_sum 
@@ -120,17 +117,16 @@ class  SokobanPuzzle:
         box_x, box_y=box 
         target_x, target_y=target 
         return math.sqrt((box_x - target_x) ** 2 + (box_y - target_y) ** 2)
+    
     def h3(self):
         h=0
         max_distance = math.sqrt(len(self.grid) ** 2 + len(self.grid[0]) ** 2)
         for box in self.boxes:
-            min_dist = min( self.distance_euclidienne(box, target) * (1 + self.distance_euclidienne(box, target) / max_distance)for target in self.targets)
+            min_dist = min( self.distance_euclidienne(box, target) * (1 + self.distance_euclidienne(box, target) / max_distance)for target in self.target)
             h += min_dist
         return h
-
-
-    
-
+    def __str__(self):
+        return "\n".join("".join(row) for row in self.grid)
 
 class Node :
     def __init__(self, state, parent, action, g=0 ):
@@ -149,8 +145,9 @@ class Node :
         current = self
         while current is not None :
             path.append(current.state)
-            current=current 
+            current = current.parent 
         return path
+
     def getSolution (self):
         actions=[]
         current = self
@@ -161,76 +158,105 @@ class Node :
     def setF(self, h):
         self.h = h
         self.f = self.g + self.h
+    def __str__(self):
+        return f"Node(f={self.f}, g={self.g}, h={self.h}, action={self.action})"
+
 
 def BFS(initial_state):
-    queue = Queue() 
-    visited = set()
-    queue.enqueue(Node(initial_state, None, None))
-    visited.add(initial_state)
-    while not queue.is_empty():
-        current_node = queue.dequeue()
+    queue = [] 
+    visited = []
+    initial_node = Node(initial_state, None, None)
+    queue.append(initial_node)
+    visited.append(initial_state)
+
+    while len(queue) > 0:
+        current_node = queue.pop(0)
         if current_node.state.isGoal():
             return current_node.getSolution()  
-        for action, newGrid  in current_node.state.successorFunction():
+        for action, newGrid in current_node.state.successorFunction():
             if newGrid not in visited:
-                new_node = Node(newGrid, current_node, action)
-                queue.enqueue(new_node)
-                visited.add(newGrid)
-        return None
+                new_state = SokobanPuzzle(newGrid)  
+                new_node = Node(new_state, current_node, action)
+                queue.append(new_node)
+                visited.append(newGrid)
+
+    return []
 
 
 
-def AStar (initial_state ):
-    queue = Queue() 
-    visited = set()
+
+def AStar (initial_state):
+    queue=[] 
+    visited = []
     initial_node=(Node(initial_state, None, None))
-    queue.enqueue((initial_node.f, initial_node))
+    queue.append((initial_node.f, initial_node))
     initial_node.setF(0)
-    visited.add(initial_state)
-    while not queue.is_empty():
-        current_node = queue.dequeue()
+    visited.append(initial_state)
+    while  len(queue) > 0:
+        current_node = queue.pop(0)[1]
         if current_node.state.isGoal():
             return current_node.getSolution()  
         for action, newGrid  in current_node.state.successorFunction():
             if newGrid not in visited:
-                new_node = Node(newGrid, current_node, action)
+                new_state=SokobanPuzzle(newGrid)
+                new_node = Node(new_state, current_node, action)
                 h1 = new_node.state.h1()  
                 h2 = new_node.state.h2()
                 new_node.setF(h2)
-                queue.enqueue((new_node.f, new_node))
-                visited.add(newGrid)
-    return None
+                queue.append((new_node.f, new_node))
+                visited.append(newGrid)
+    return []
 
 
 # A* avec Distance Euclidienne
-def AStar (initial_state ):
-    queue = Queue() 
-    visited = set()
+def AStar2 (initial_state):
+    queue=[] 
+    visited = []
     initial_node=(Node(initial_state, None, None))
-    queue.enqueue((initial_node.f, initial_node))
     initial_node.setF(0)
-    visited.add(initial_state)
-    while not queue.is_empty():
-        current_node = queue.dequeue()
+    queue.append((initial_node.f, copy.deepcopy(initial_node)))
+    visited.append(initial_state)
+    while  len(queue) > 0:
+        current_node = queue.pop(0)[1]
         if current_node.state.isGoal():
             return current_node.getSolution()  
-        for action, newGrid  in current_node.state.successorFunction():
-            if newGrid not in visited:
-                new_node = Node(newGrid, current_node, action)
-                h3 = new_node.state.h3()
-                new_node.setF(h3)
-                queue.enqueue((new_node.f, new_node))
-                visited.add(newGrid)
-    return None
+        if not current_node.state.isGoal(): 
+             for action, newGrid  in current_node.state.successorFunction():
+                 if newGrid not in visited:
+                    new_node = Node(newGrid, current_node, action)
+                    h3 = new_node.state.h3()
+                    new_node.setF(h3)
+                    queue.append((new_node.f, new_node))
+                    visited.append(newGrid)
+    return []
 
+example = [
+    ['O', 'O', 'O', 'O', 'O', 'O'],
+    ['O', 'S', ' ', 'B', ' ', 'O'],
+    ['O', ' ', 'O', ' ', ' ', 'O'],
+    ['O', ' ', ' ', ' ', ' ', 'O'],
+    ['O', ' ', ' ', 'R', ' ', 'O'],
+    ['O', 'O', 'O', 'O', 'O', 'O']
+]
+def count_steps(result): 
+    steps = 0
+    for i in result:  
+        steps += 1 
+    return steps
 
+def test_algorithm(algorithm, exemple):
+    start_time = time.time()  
+    puzzle = SokobanPuzzle(exemple)
+    result = algorithm(puzzle)  
+    end_time = time.time()    
+    steps = count_steps(result)  
+    return steps, end_time - start_time 
 
+steps_bfs, time_bfs = test_algorithm(BFS, example)
+print(f"BFS: Steps = {steps_bfs}, Time = {time_bfs:.4f} seconds")
 
+steps_A1, time_A1 = test_algorithm(AStar, example)
+print(f"A1: Steps = {steps_A1}, Time = {time_A1:.4f} seconds")
 
-        
-        
-        
-
-
-
-
+steps_A2, time_A2 = test_algorithm(AStar2, example)
+print(f"A2: Steps = {steps_A2}, Time = {time_A2:.4f} seconds")
