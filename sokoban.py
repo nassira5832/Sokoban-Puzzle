@@ -1,3 +1,4 @@
+import math
 class  SokobanPuzzle:
     def __init__(self, grid):
         self.grid=grid
@@ -108,12 +109,28 @@ class  SokobanPuzzle:
     def h2(self):
         h1_value = self.h1()
         manhattan_sum = 0
-        for box in self.get_boxes():
-                closest_target_distance = min(self.manhattan_distance(box, target) 
+        for box in self.boxes():
+                min_distance = min(self.manhattan_distance(box, target) 
                                                for target in self.get_targets())
-                manhattan_sum += closest_target_distance
+                manhattan_sum += min_distance
 
         return 2 * h1_value + manhattan_sum 
+    def distance_euclidienne(self, box , target): 
+        box_x, box_y=box 
+        target_x, target_y=target 
+        return math.sqrt((box_x - target_x) ** 2 + (box_y - target_y) ** 2)
+    def h3(self):
+        h=0
+        max_distance = math.sqrt(len(self.grid) ** 2 + len(self.grid[0]) ** 2)
+        for box in self.boxes:
+            min_dist = min( self.distance_euclidienne(box, target) * (1 + self.distance_euclidienne(box, target) / max_distance)for target in self.targets)
+            h += min_dist
+        return h
+
+
+    
+
+
 class Node :
     def __init__(self, state, parent, action, g=0 ):
         self.state = state
@@ -159,6 +176,9 @@ def BFS(initial_state):
                 queue.enqueue(new_node)
                 visited.add(newGrid)
         return None
+
+
+
 def AStar (initial_state ):
     queue = Queue() 
     visited = set()
@@ -174,12 +194,33 @@ def AStar (initial_state ):
             if newGrid not in visited:
                 new_node = Node(newGrid, current_node, action)
                 h1 = new_node.state.h1()  
-                h2 = new_node.h2()
+                h2 = new_node.state.h2()
                 new_node.setF(h2)
                 queue.enqueue((new_node.f, new_node))
                 visited.add(newGrid)
     return None
 
+
+# A* avec Distance Euclidienne
+def AStar (initial_state ):
+    queue = Queue() 
+    visited = set()
+    initial_node=(Node(initial_state, None, None))
+    queue.enqueue((initial_node.f, initial_node))
+    initial_node.setF(0)
+    visited.add(initial_state)
+    while not queue.is_empty():
+        current_node = queue.dequeue()
+        if current_node.state.isGoal():
+            return current_node.getSolution()  
+        for action, newGrid  in current_node.state.successorFunction():
+            if newGrid not in visited:
+                new_node = Node(newGrid, current_node, action)
+                h3 = new_node.state.h3()
+                new_node.setF(h3)
+                queue.enqueue((new_node.f, new_node))
+                visited.add(newGrid)
+    return None
 
 
 
