@@ -122,9 +122,6 @@ class  SokobanPuzzle:
                min_dist = min(distences)
                h += min_dist
         return h
-    def __str__(self):
-        return "\n".join("".join(row) for row in self.grid)
-
 class Node :
     def __init__(self, state, parent, action, g=0 ):
         self.state = state
@@ -157,9 +154,7 @@ class Node :
     def setF(self, h):
         self.h = h
         self.f = self.g + self.h
-    def __str__(self):
-        return f"Node(f={self.f}, g={self.g}, h={self.h}, action={self.action})"
-
+    
 
 def BFS(initial_state):
     queue = [] 
