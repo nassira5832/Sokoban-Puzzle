@@ -145,13 +145,15 @@ class Node :
             current = current.parent 
         return path
 
-    def getSolution(self):
-        actions = []
+    def getSolution (self):
+        actions=[]
         current = self
-        while current is not None:
-             actions.append(current.action)
-             current = current.parent
-        return actions[::-1]
+        while current is not None :
+            if current.action is not None:
+               actions.append(current.action)
+            current=current.parent
+        actions.reverse()
+        return actions 
     def setF(self, h):
         self.h = h
         self.f = self.g + self.h
@@ -259,12 +261,12 @@ def main():
     ['O', 'O', 'O', 'O', 'O', 'O']
     ]
     
-    #steps_bfs, time_bfs = test_algorithm(BFS, example)
-    #print(f"BFS: Steps = {steps_bfs}, Time = {time_bfs:.4f} seconds")*/
     steps_A1, time_A1 = test_algorithm(AStar, example)
     print(f"A1: Steps = {steps_A1}, Time = {time_A1:.4f} seconds")
 
     steps_A2, time_A2 = test_algorithm(AStar2, example)
     print(f"A2: Steps = {steps_A2}, Time = {time_A2:.4f} seconds")
+
+    
 if __name__ == "__main__":
     main()
