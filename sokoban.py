@@ -169,7 +169,7 @@ def BFS(initial_state):
     visited.append(initial_state)
 
     while len(queue) > 0:
-        current_node = queue.pop()
+        current_node = queue.pop(0)
         if current_node.state.isGoal():
             return current_node.getSolution()  
         for action, newGrid in current_node.state.successorFunction():
@@ -267,6 +267,11 @@ def main():
     steps_A2, time_A2 = test_algorithm(AStar2, example)
     print(f"A2: Steps = {steps_A2}, Time = {time_A2:.4f} seconds")
 
-    
+    try:
+        steps_bfs, time_bfs = test_algorithm(BFS, example)
+        print(f"BFS: Steps = {steps_bfs}, Time = {time_bfs:.4f} seconds")
+    except Exception as e:
+        print("Erreur lors de l'exécution de BFS:", e)
+
 if __name__ == "__main__":
     main()
