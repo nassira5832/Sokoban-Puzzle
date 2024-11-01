@@ -37,21 +37,15 @@ class  SokobanPuzzle:
                     targets.append((i,j))
         return targets
     def isGoal(self):
-        cmpt = 0 
-        for row in self.grid:
-            for cell in row: 
-                if (cell=='*'):
-                    cmpt+=1
         for row in self.grid:
             for cell in row:
-                if cell == 'B' and cmpt==0 :
-                    print("il n'existe pas de box dans votre grid ")
-                else : return False    
+                if cell=='S' or cell=='.' or cell=='B':
+                   return False
         return True
     
     def successorFunction(self):
         successors = [] 
-        x , y = self.findplayer()
+        x , y = self.findplayer() 
         directions = {
         'UP': (-1, 0),
         'DOWN': (1, 0),
@@ -64,32 +58,32 @@ class  SokobanPuzzle:
             if (0 <= newX < len(self.grid) and 0 <= newY< len(self.grid[0]) and self.grid[newX][newY]!='O' and self.grid[newX][newY]!='*'):
                 if (self.grid[newX][newY]=='S'):
                     newGrid = [row[:] for row in self.grid]
-                    newGrid[x][y]=''
+                    newGrid[x][y]=' '
                     newGrid[newX][newY]='.'
                     successors.append((i, newGrid))
 
                 if (self.grid[newX][newY]==' '):
                     newGrid = [row[:] for row in self.grid]
-                    newGrid[x][y]=''
+                    newGrid[x][y]=' '
                     newGrid[newX][newY]='R'
                     successors.append((i, newGrid))
 
                 if(self.grid[newX][newY]=='B' ):
                     if (0 <= newX+dx < len(self.grid) and 0 <= newY+dy< len(self.grid[0]) and self.grid[newX+dx][newY+dy]!='O' and self.grid[newX+dx][newY+dy]!='*'and self.grid[newX+dx][newY+dy]!='B'):
                      
-                     if(self.grid[newX+dx][newY+dy]==' '):
-                        newGrid = [row[:] for row in self.grid]
-                        newGrid[x][y]=' '
-                        newGrid[newX][newY]='R'
-                        newGrid[newX+dx][newY+dy]='B'
-                        successors.append((i, newGrid))
+                        if(self.grid[newX+dx][newY+dy]==' '):
+                           newGrid = [row[:] for row in self.grid]
+                           newGrid[x][y]=' '
+                           newGrid[newX][newY]='R'
+                           newGrid[newX+dx][newY+dy]='B'
+                           successors.append((i, newGrid))
 
-                     if(self.grid[newX+dx][newY+dy]=='S'):
-                        newGrid = [row[:] for row in self.grid]
-                        newGrid[x][y]=''
-                        newGrid[newX][newY]='R'
-                        newGrid[newX+dx][newY+dy]='*'
-                        successors.append((i, newGrid))
+                        if(self.grid[newX+dx][newY+dy]=='S'):
+                            newGrid = [row[:] for row in self.grid]
+                            newGrid[x][y]=' '
+                            newGrid[newX][newY]='R'
+                            newGrid[newX+dx][newY+dy]='*'
+                            successors.append((i, newGrid))
         return successors
     def manhattan_distance(self, box, target):
         box_x, box_y = box
@@ -173,7 +167,7 @@ def BFS(initial_state):
     visited.append(initial_state)
 
     while len(queue) > 0:
-        current_node = queue.pop(0)
+        current_node = queue.pop()
         if current_node.state.isGoal():
             return current_node.getSolution()  
         for action, newGrid in current_node.state.successorFunction():
@@ -181,32 +175,34 @@ def BFS(initial_state):
                 new_state = SokobanPuzzle(newGrid)  
                 new_node = Node(new_state, current_node, action)
                 queue.append(new_node)
-                visited.append(newGrid)
+                visited.append(new_state)
 
     return []
 
-
-def AStar (initial_state):
-    queue=[] 
+def AStar(initial_state):
+    queue = [] 
     visited = []
-    initial_node=(Node(initial_state, None, None))
+    initial_node = Node(initial_state, None, None)
+    h1 = initial_node.state.h1()  
+    initial_node.setF(h1) 
     queue.append((initial_node.f, initial_node))
-    initial_node.setF(0)
     visited.append(initial_state)
-    while  len(queue) > 0:
-        current_node = queue.pop(0)[1]
+
+    while len(queue) > 0:
+        current_node = queue.pop(0)[1]  
         if current_node.state.isGoal():
             return current_node.getSolution()  
-        for action, newGrid  in current_node.state.successorFunction():
+
+        for action, newGrid in current_node.state.successorFunction():
             if newGrid not in visited:
-                new_state=SokobanPuzzle(newGrid)
+                new_state = SokobanPuzzle(newGrid)
                 new_node = Node(new_state, current_node, action)
                 h1 = new_node.state.h1()  
-                h2 = new_node.state.h2()
-                new_node.setF(h2)
+                new_node.setF(h1)  # Mettre à jour le coût f
                 queue.append((new_node.f, new_node))
                 visited.append(newGrid)
-    return []
+
+    return [] 
 
 
 # A* avec Distance Euclidienne
@@ -231,16 +227,10 @@ def AStar2 (initial_state):
                     new_node.setF(h3)
                     queue.append((new_node.f, new_node))
                     visited.append(newGrid)
+                    
     return []
 
-example = [
-    ['O', 'O', 'O', 'O', 'O', 'O'],
-    ['O', 'S', ' ', 'B', ' ', 'O'],
-    ['O', ' ', 'O', ' ', ' ', 'O'],
-    ['O', ' ', ' ', ' ', ' ', 'O'],
-    ['O', ' ', ' ', 'R', ' ', 'O'],
-    ['O', 'O', 'O', 'O', 'O', 'O']
-]
+
 def count_steps(result): 
     steps = 0
     print(result)
@@ -256,11 +246,25 @@ def test_algorithm(algorithm, exemple):
     steps = count_steps(result)  
     return steps, end_time - start_time 
 
-steps_bfs, time_bfs = test_algorithm(BFS, example)
-print(f"BFS: Steps = {steps_bfs}, Time = {time_bfs:.4f} seconds")
 
-steps_A1, time_A1 = test_algorithm(AStar, example)
-print(f"A1: Steps = {steps_A1}, Time = {time_A1:.4f} seconds")
+def main():
+    print("Début de l'exécution")
 
-steps_A2, time_A2 = test_algorithm(AStar2, example)
-print(f"A2: Steps = {steps_A2}, Time = {time_A2:.4f} seconds")
+    example = [
+    ['O', 'O', 'O', 'O', 'O', 'O'],
+    ['O', ' ', ' ', ' ', ' ', 'O'],
+    ['O', ' ', 'O', ' ', ' ', 'O'],
+    ['O', 'B', ' ', 'R', ' ', 'O'],
+    ['O', 'S', ' ', ' ', ' ', 'O'],
+    ['O', 'O', 'O', 'O', 'O', 'O']
+    ]
+    
+    #steps_bfs, time_bfs = test_algorithm(BFS, example)
+    #print(f"BFS: Steps = {steps_bfs}, Time = {time_bfs:.4f} seconds")*/
+    steps_A1, time_A1 = test_algorithm(AStar, example)
+    print(f"A1: Steps = {steps_A1}, Time = {time_A1:.4f} seconds")
+
+    steps_A2, time_A2 = test_algorithm(AStar2, example)
+    print(f"A2: Steps = {steps_A2}, Time = {time_A2:.4f} seconds")
+if __name__ == "__main__":
+    main()
