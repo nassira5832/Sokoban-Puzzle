@@ -228,6 +228,7 @@ def AStar2 (initial_state):
                     queue.append((new_node.f, new_node))
                     visited.append(newGrid)
                     
+                    
     return []
 
 
