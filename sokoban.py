@@ -145,13 +145,13 @@ class Node :
             current = current.parent 
         return path
 
-    def getSolution (self):
-        actions=[]
+    def getSolution(self):
+        actions = []
         current = self
-        while current is not None :
-            actions.append(current.action)
-            current=current.parent
-        return actions 
+        while current is not None:
+             actions.append(current.action)
+             current = current.parent
+        return actions[::-1]
     def setF(self, h):
         self.h = h
         self.f = self.g + self.h
@@ -198,7 +198,7 @@ def AStar(initial_state):
                 new_state = SokobanPuzzle(newGrid)
                 new_node = Node(new_state, current_node, action)
                 h1 = new_node.state.h1()  
-                new_node.setF(h1)  # Mettre à jour le coût f
+                new_node.setF(h1) 
                 queue.append((new_node.f, new_node))
                 visited.append(newGrid)
 
@@ -227,7 +227,7 @@ def AStar2 (initial_state):
                     new_node.setF(h3)
                     queue.append((new_node.f, new_node))
                     visited.append(newGrid)
-                    
+
                     
     return []
 
@@ -249,7 +249,6 @@ def test_algorithm(algorithm, exemple):
 
 
 def main():
-    print("Début de l'exécution")
 
     example = [
     ['O', 'O', 'O', 'O', 'O', 'O'],
