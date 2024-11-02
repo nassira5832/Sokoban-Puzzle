@@ -266,11 +266,8 @@ def main():
     steps_A2, time_A2 = test_algorithm(AStar2, example)
     print(f"A2: Steps = {steps_A2}, Time = {time_A2:.4f} seconds")
 
-    try:
-        steps_bfs, time_bfs = test_algorithm(BFS, example)
-        print(f"BFS: Steps = {steps_bfs}, Time = {time_bfs:.4f} seconds")
-    except Exception as e:
-        print("Erreur lors de l'exécution de BFS:", e)
+    steps_bfs, time_bfs = test_algorithm(BFS, example)
+    print(f"BFS: Steps = {steps_bfs}, Time = {time_bfs:.4f} seconds")
 
 if __name__ == "__main__":
     main()
