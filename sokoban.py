@@ -1,7 +1,9 @@
 import math
 import time 
+import heapq  
+from itertools import count 
 from heapq import heappush, heappop
-from itertools import count
+
 class  SokobanPuzzle:
     def __init__(self, grid):
         self.grid=grid
@@ -160,23 +162,31 @@ class Node :
 
 def BFS(initial_state):
     queue = [] 
-    visited = []
-    initial_node = Node(initial_state, None, None)
-    queue.append(initial_node)
-    visited.append(initial_state)
+    visited = set() 
+    initial_node = Node(initial_state, None, None) 
 
-    while len(queue) > 0:
-        current_node = queue.pop(0)
-        if current_node.state.isGoal():
-            return current_node.getSolution()  
-        for action, newGrid in current_node.state.successorFunction():
-            if newGrid not in visited:
-                new_state = SokobanPuzzle(newGrid)  
-                new_node = Node(new_state, current_node, action)
-                queue.append(new_node)
-                visited.append(new_state)
+    if initial_node.state.isGoal():  
+        return initial_node.getSolution()
 
-    return []
+    queue.append(initial_node) 
+    visited.add(tuple(tuple(row) for row in initial_state.grid)) 
+    while len(queue) > 0:  
+        current_node = queue.pop(0)  
+        visited.add(tuple(tuple(row) for row in current_node.state.grid))  
+
+        for action, newGrid in current_node.state.successorFunction(): 
+            new_state = SokobanPuzzle(newGrid) 
+
+            new_state_tuple = tuple(tuple(row) for row in new_state.grid) 
+            if new_state_tuple not in visited and new_state_tuple not in (tuple(tuple(row) for row in n.state.grid) for n in queue):  
+                child_node = Node(new_state, current_node, action) 
+                if child_node.state.isGoal(): 
+                    return child_node.getSolution()
+                queue.append(child_node) 
+
+    return [] 
+
+
 
 def AStar(initial_state):
     
@@ -213,9 +223,6 @@ def AStar(initial_state):
 
 
 # A* avec Distance Euclidienne
-from heapq import heappush, heappop
-from itertools import count
-
 def AStar2(initial_state):
     queue = [] 
     visited = set()  
@@ -229,10 +236,8 @@ def AStar2(initial_state):
 
     while len(queue) > 0:
         current_node = heappop(queue)[2]  
-
         if current_node.state.isGoal():
             return current_node.getSolution()  
-
         for action, newGrid in current_node.state.successorFunction():
             newGrid_tuple = tuple(tuple(row) for row in newGrid)  
             if newGrid_tuple not in visited:
@@ -244,8 +249,6 @@ def AStar2(initial_state):
                 visited.add(newGrid_tuple)  
 
     return []
-
-
 
 def count_steps(result): 
     steps = 0
