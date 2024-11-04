@@ -1,5 +1,7 @@
 import math
 import time 
+import heapq  
+from itertools import count 
 class  SokobanPuzzle:
     def __init__(self, grid):
         self.grid=grid
@@ -58,13 +60,13 @@ class  SokobanPuzzle:
             if (0 <= newX < len(self.grid) and 0 <= newY< len(self.grid[0]) and self.grid[newX][newY]!='O' and self.grid[newX][newY]!='*'):
                 if (self.grid[newX][newY]=='S'):
                     newGrid = [row[:] for row in self.grid]
-                    newGrid[x][y]=' '
+                    newGrid[x][y]= 'S' if self.grid[x][y] == '.' else ' ' 
                     newGrid[newX][newY]='.'
                     successors.append((i, newGrid))
 
                 if (self.grid[newX][newY]==' '):
                     newGrid = [row[:] for row in self.grid]
-                    newGrid[x][y]=' '
+                    newGrid[x][y]= 'S' if self.grid[x][y] == '.' else ' ' 
                     newGrid[newX][newY]='R'
                     successors.append((i, newGrid))
 
@@ -73,14 +75,14 @@ class  SokobanPuzzle:
                      
                         if(self.grid[newX+dx][newY+dy]==' '):
                            newGrid = [row[:] for row in self.grid]
-                           newGrid[x][y]=' '
+                           newGrid[x][y]= 'S' if self.grid[x][y] == '.' else ' '  
                            newGrid[newX][newY]='R'
                            newGrid[newX+dx][newY+dy]='B'
                            successors.append((i, newGrid))
 
                         if(self.grid[newX+dx][newY+dy]=='S'):
                             newGrid = [row[:] for row in self.grid]
-                            newGrid[x][y]=' '
+                            newGrid[x][y]= 'S' if self.grid[x][y] == '.' else ' ' 
                             newGrid[newX][newY]='R'
                             newGrid[newX+dx][newY+dy]='*'
                             successors.append((i, newGrid))
@@ -177,27 +179,35 @@ def BFS(initial_state):
     return []
 
 def AStar(initial_state):
+    
+
     queue = [] 
-    visited = []
+    visited = set()  
+    counter = count()  
+
     initial_node = Node(initial_state, None, None)
     h1 = initial_node.state.h1()  
-    initial_node.setF(h1) 
-    queue.append((initial_node.f, initial_node))
-    visited.append(initial_state)
+    initial_node.setF(h1)  
+    heapq.heappush(queue, (initial_node.f, next(counter), initial_node))  
+
+   
+    visited.add(tuple(tuple(row) for row in initial_state.grid))
 
     while len(queue) > 0:
-        current_node = queue.pop(0)[1]  
+        current_node = heapq.heappop(queue)[2]  
+        
         if current_node.state.isGoal():
-            return current_node.getSolution()  
+            return current_node.getSolution() 
 
         for action, newGrid in current_node.state.successorFunction():
-            if newGrid not in visited:
+            newGrid_tuple = tuple(tuple(row) for row in newGrid)  
+            if newGrid_tuple not in visited:  
                 new_state = SokobanPuzzle(newGrid)
                 new_node = Node(new_state, current_node, action)
                 h1 = new_node.state.h1()  
-                new_node.setF(h1) 
-                queue.append((new_node.f, new_node))
-                visited.append(newGrid)
+                new_node.setF(new_node.g + h1) 
+                heapq.heappush(queue, (new_node.f, next(counter), new_node)) 
+                visited.add(newGrid_tuple)  
 
     return [] 
 
@@ -249,16 +259,17 @@ def main():
 
     example= [
     ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'],
-    ['O', ' ', ' ', ' ', ' ', ' ', 'O', ' ', ' ', 'O'],
-    ['O', 'S', ' ', 'B', 'R', ' ', 'S', ' ', ' ', 'O'],
-    ['O', ' ', ' ', ' ', ' ', ' ', 'O', ' ', ' ', 'O'],
-    ['O', ' ', 'B', 'O', 'O', 'O', ' ', ' ', ' ', 'O'],
-    ['O', ' ', ' ', ' ', ' ', 'O', ' ', 'O', 'O', 'O'],
-    ['O', ' ', 'O', 'O', ' ', ' ', 'O', ' ', 'O', 'O'],
-    ['O', ' ', ' ', ' ', ' ', ' ', 'O', ' ', ' ', 'O'],
-    ['O', ' ', ' ', 'O', 'O', 'O', 'O', 'O', 'O', 'O'],
+    ['O', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'O'],
+    ['O', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'O'],
+    ['O', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'O'],
+    ['O', ' ', ' ', ' ', 'O', 'O', 'O', ' ', ' ', 'O'],
+    ['O', ' ', ' ', ' ', ' ', ' ', 'O', '.', ' ', 'O'],
+    ['O', ' ', ' ', ' ', ' ', ' ', ' ', 'O', ' ', 'O'],
+    ['O', ' ', ' ', ' ', 'B', ' ', ' ', 'O', ' ', 'O'],
+    ['O', ' ', ' ', ' ', ' ', ' ', ' ', 'O', ' ', 'O'],
     ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O']  
     ]
+   
 
     steps_A1, time_A1 = test_algorithm(AStar, example)
     print(f"A1: Steps = {steps_A1}, Time = {time_A1:.4f} seconds")
