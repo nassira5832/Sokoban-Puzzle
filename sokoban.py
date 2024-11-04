@@ -186,40 +186,69 @@ def BFS(initial_state):
 
     return [] 
 
+def is_corner_deadlock(grid, box_position):
+    """Check if a box is in a corner deadlock position""" 
+    x, y = box_position
+    if x < 0 or x >= len(grid) or y < 0 or y >= len(grid[0]):
+        return False  # Out of bounds
 
+    if grid[x][y] == 'B':
+        if (x - 1 >= 0 and grid[x - 1][y] == 'O' and y - 1 >= 0 and grid[x][y - 1] == 'O') or \
+           (x + 1 < len(grid) and grid[x + 1][y] == 'O' and y + 1 < len(grid[0]) and grid[x][y + 1] == 'O'):
+            return True
+    return False
 
-def AStar(initial_state):
-    
+def is_line_deadlock(grid, box_position):
+    """Check if a box is in a line deadlock position""" 
+    x, y = box_position
+    if x < 0 or x >= len(grid) or y < 0 or y >= len(grid[0]):
+        return False  # Out of bounds
 
+    if grid[x][y] == 'B':
+        if (x - 1 >= 0 and grid[x - 1][y] == 'B' and x + 1 < len(grid) and grid[x + 1][y] == 'O') or \
+           (y - 1 >= 0 and grid[x][y - 1] == 'B' and y + 1 < len(grid[0]) and grid[x][y + 1] == 'O'):
+            return True
+    return False
+
+def contains_deadlock(self, state):
+        for x in range(len(state.grid)):
+            for y in range(len(state.grid[0])):
+                if state.grid[x][y] == 'B':  # 'B' indicates a box
+                    if is_corner_deadlock(state.grid, (x, y)) or is_line_deadlock(state.grid, (x, y)):
+                        return True
+        return False
+
+import heapq
+
+def AStar(initial_state, heuristic='h1'):
     queue = [] 
     visited = set()  
-    counter = count()  
 
     initial_node = Node(initial_state, None, None)
-    h1 = initial_node.state.h1()  
-    initial_node.setF(h1)  
-    heapq.heappush(queue, (initial_node.f, next(counter), initial_node))  
+    h_value = initial_node.state.h1() if heuristic == 'h1' else initial_node.state.h2()  
+    initial_node.setF(h_value)  
+    heapq.heappush(queue, (initial_node.f, initial_node))  
 
-   
     visited.add(tuple(tuple(row) for row in initial_state.grid))
 
     while len(queue) > 0:
-        current_node = heapq.heappop(queue)[2]  
+        current_node = heapq.heappop(queue)[1]  # Obtenir le nœud sans l'index
         
         if current_node.state.isGoal():
             return current_node.getSolution() 
 
         for action, newGrid in current_node.state.successorFunction():
             newGrid_tuple = tuple(tuple(row) for row in newGrid)  
-            if newGrid_tuple not in visited:  
+            if not contains_deadlock(newGrid) and newGrid_tuple not in visited:  
                 new_state = SokobanPuzzle(newGrid)
                 new_node = Node(new_state, current_node, action)
-                h1 = new_node.state.h1()  
-                new_node.setF(new_node.g + h1) 
-                heapq.heappush(queue, (new_node.f, next(counter), new_node)) 
+                h_value = new_node.state.h1() if heuristic == 'h1' else new_node.state.h2()  
+                new_node.setF(new_node.g + h_value) 
+                heapq.heappush(queue, (new_node.f, new_node))  # Pas besoin du compteur ici
                 visited.add(newGrid_tuple)  
 
-    return [] 
+    return []
+
 
 
 # A* avec Distance Euclidienne
