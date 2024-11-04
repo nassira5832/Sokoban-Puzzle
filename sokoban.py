@@ -1,7 +1,7 @@
 import math
 import time 
-import heapq  
-from itertools import count 
+from heapq import heappush, heappop
+from itertools import count
 class  SokobanPuzzle:
     def __init__(self, grid):
         self.grid=grid
@@ -213,30 +213,38 @@ def AStar(initial_state):
 
 
 # A* avec Distance Euclidienne
-def AStar2 (initial_state):
-    queue=[] 
-    visited = []
-    initial_node=(Node(initial_state, None, None))
-    initial_node.setF(0)
-    queue.append((initial_node.f, initial_node))
-    visited.append(initial_state)
-    
-    while  len(queue)>0:
-        current_node = queue.pop(0)[1]
+from heapq import heappush, heappop
+from itertools import count
+
+def AStar2(initial_state):
+    queue = [] 
+    visited = set()  
+    counter = count()  
+
+    initial_node = Node(initial_state, None, None)
+    initial_node.setF(0)  
+    heappush(queue, (initial_node.f, next(counter), initial_node))  
+
+    visited.add(tuple(tuple(row) for row in initial_state.grid))
+
+    while len(queue) > 0:
+        current_node = heappop(queue)[2]  
+
         if current_node.state.isGoal():
             return current_node.getSolution()  
-        if not current_node.state.isGoal(): 
-             for action, newGrid  in current_node.state.successorFunction():
-                 if newGrid not in visited:
-                    new_state=SokobanPuzzle(newGrid)
-                    new_node = Node(new_state, current_node, action)
-                    h3 = new_node.state.h3()
-                    new_node.setF(h3)
-                    queue.append((new_node.f, new_node))
-                    visited.append(newGrid)
 
-                    
+        for action, newGrid in current_node.state.successorFunction():
+            newGrid_tuple = tuple(tuple(row) for row in newGrid)  
+            if newGrid_tuple not in visited:
+                new_state = SokobanPuzzle(newGrid)
+                new_node = Node(new_state, current_node, action)
+                h3 = new_node.state.h3()  
+                new_node.setF(new_node.g + h3)  
+                heappush(queue, (new_node.f, next(counter), new_node))  
+                visited.add(newGrid_tuple)  
+
     return []
+
 
 
 def count_steps(result): 
