@@ -112,20 +112,24 @@ class  SokobanPuzzle:
               manhattan_sum += min_distance
 
         return 2 * h1_value + manhattan_sum 
-    def distance_euclidienne(self, box , target): 
-        box_x, box_y=box 
-        target_x, target_y=target 
-        return math.sqrt((box_x - target_x) ** 2 + (box_y - target_y) ** 2)
-    
     def h3(self):
-        h=0
-        max_distance = math.sqrt(len(self.grid) ** 2 + len(self.grid[0]) ** 2)
+        manhattan_sum = 0
+        dist = []
+        min_player_to_box =0
         for box in self.boxes:
-            distences=[ self.distance_euclidienne(box, target) * (1 + self.distance_euclidienne(box, target) / max_distance)for target in self.target]
-            if distences:
-               min_dist = min(distences)
-               h += min_dist
-        return h
+           distance = self.manhattan_distance(self.player, box)
+           dist.append(distance)  
+        print("Distances from player to boxes:", dist)
+        for box in self.boxes:
+            distances = [self.manhattan_distance(box, target) for target in self.target]
+            if distances:
+              min_distance = min(distances)
+              manhattan_sum += min_distance
+        if dist==[]:
+            min_player_to_box =2
+        else: 
+            min_player_to_box = min(dist)
+        return min_player_to_box + manhattan_sum 
 class Node :
     def __init__(self, state, parent, action, g=0 ):
         self.state = state
@@ -218,13 +222,13 @@ def contains_deadlock(grid):
                     return True
     return False
 
-def AStar(initial_state, heuristic='h1'):
+def AStar(initial_state, heuristic='h3'):
     queue = [] 
     visited = set()  
     counter = count()  
 
     initial_node = Node(initial_state, None, None)
-    h_value = initial_node.state.h1()
+    h_value = initial_node.state.h3()
     initial_node.setF(h_value) 
     heapq.heappush(queue, (initial_node.f, next(counter), initial_node))  
 
@@ -241,7 +245,7 @@ def AStar(initial_state, heuristic='h1'):
             if not contains_deadlock(newGrid) and newGrid_tuple not in visited:  
                 new_state = SokobanPuzzle(newGrid)
                 new_node = Node(new_state, current_node, action)
-                h_value = new_node.state.h1()  
+                h_value = new_node.state.h3()  
                 new_node.setF(new_node.g + h_value)  
                 heapq.heappush(queue, (new_node.f, next(counter), new_node)) 
                 visited.add(newGrid_tuple)  
